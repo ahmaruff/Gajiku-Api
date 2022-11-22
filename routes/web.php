@@ -16,3 +16,12 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+$router->group(['prefix' => 'golongan'], function() use($router){
+    $router->get('/','GolonganController@index');
+    $router->get('/all','GolonganController@index');
+    $router->get('/{id}','GolonganController@getGolonganById');
+    $router->post('/add','GolonganController@storeGolongan');
+    $router->put('/update/{id}','GolonganController@updateGolonganById');
+    $router->delete('/delete/{id}','GOlonganController@deleteGolonganById');
+});
