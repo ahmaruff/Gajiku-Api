@@ -25,3 +25,12 @@ $router->group(['prefix' => 'golongan'], function() use($router){
     $router->put('/update/{id}','GolonganController@updateGolonganById');
     $router->delete('/delete/{id}','GOlonganController@deleteGolonganById');
 });
+
+$router->group(['prefix'=>'pegawai'],function() use($router){
+    $router->get('/','PegawaiController@index');
+    $router->get('/all','PegawaiController@index');
+    $router->get('/{id}','PegawaiController@getPegawaiById');
+    $router->post('/add','PegawaiController@storePegawai');
+    $router->put('/update/{id}','PegawaiController@updatePegawaiById');
+    $router->delete('/delete/{id}','PegawaiController@deleteGolonganById');
+});
