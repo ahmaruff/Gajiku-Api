@@ -131,34 +131,34 @@ class PegawaiController extends Controller
 
     public function deletePegawaiById(Request $request, $id)
     {
-        
-    }
-}if($request->isMethod('delete')){
-    try {
-        $isExist = DB::table('pegawai')->where('id',$id)->exists();
-        if($isExist){
-            $affectedRows = DB::table('pegawai')->delete($id);
-            if($affectedRows > 0){
+        if($request->isMethod('delete')){
+            try {
+                $isExist = DB::table('pegawai')->where('id',$id)->exists();
+                if($isExist){
+                    $affectedRows = DB::table('pegawai')->delete($id);
+                    if($affectedRows > 0){
+                        return response()->json([
+                            'status' => 'success',
+                            'code' => 200,
+                            'data' => null
+                        ],Response::HTTP_OK);
+                    }
+                }else {
+                    return response()->json([
+                        'status' => 'fail',
+                        'code' => 404,
+                        'data' => [
+                            'id' => 'record doesn\'t exist' 
+                        ]
+                    ],Response::HTTP_NOT_FOUND);
+                }
+            } catch (\Throwable $th) {
                 return response()->json([
-                    'status' => 'success',
-                    'code' => 200,
-                    'data' => null
-                ],Response::HTTP_OK);
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
             }
-        }else {
-            return response()->json([
-                'status' => 'fail',
-                'code' => 404,
-                'data' => [
-                    'id' => 'record doesn\'t exist' 
-                ]
-            ],Response::HTTP_NOT_FOUND);
         }
-    } catch (\Throwable $th) {
-        return response()->json([
-            'status' => 'error',
-            'code' => 400,
-            'message' => $th->getMessage()
-        ],Response::HTTP_BAD_REQUEST);
     }
 }
