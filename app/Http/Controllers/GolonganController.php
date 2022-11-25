@@ -6,27 +6,59 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
+// this JSON response following the JSend standard https://github.com/omniti-labs/jsend
+// with additional http status code following https://api.stackexchange.com/docs/error-handling
+
 class GolonganController extends Controller
 {
     public function index()
     {
-        $golongan = DB::table('golongan')->get();
+        try {
+            $golongan = DB::table('golongan')->get();
+            return response()->json([
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'golongan' => $golongan
+                ]
+            ], Response::HTTP_OK);
 
-        if(count($golongan) != 0){
-           return response()->json($golongan,Response::HTTP_OK);
-        }
-        else{
-            return response()->json([],Response::HTTP_NO_CONTENT);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 400,
+                'message' => $th->getMessage()
+            ],Response::HTTP_BAD_REQUEST);
         }
     }
 
     public function getGolonganById($id)
     {
-        $gol = DB::table('golongan')->where('id',$id)->first();
-        if($gol){
-            return response()->json($gol);
-        }else {
-            return response()->json([],Response::HTTP_NOT_FOUND);
+        try {
+            $golongan = DB::table('golongan')->where('id',$id)->first();
+            if($golongan){
+                return response()->json([
+                    'status' => 'success',
+                    'code' => 200,
+                    'data' => [
+                        'golongan' => $golongan
+                    ]
+                ],Response::HTTP_OK);
+            }else {
+                return response()->json([
+                    'status' => 'fail',
+                    'code' => 404,
+                    'data' => [
+                        'id' => 'data not found or record doesn\'t exist'
+                    ]
+                ],Response::HTTP_NOT_FOUND);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 400,
+                'message' => $th->getMessage()
+            ],Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -38,16 +70,23 @@ class GolonganController extends Controller
                     'created_at' => \Carbon\Carbon::now(),
                     'updated_at' => \Carbon\Carbon::now()
                 ]);
-                // $golongan = $request->all();
                 $isCreated = DB::table('golongan')->insert($request->all());
-                return response([
-                    'status' => $isCreated,
-                    'message' => 'success',
-                    'data' => $request->all()
-                ],Response::HTTP_CREATED);
+                if($isCreated){
+                    return response([
+                        'status' => 'success',
+                        'code' => 201,
+                        'data' => [
+                            'golongan' => $request->all()
+                        ]
+                    ],Response::HTTP_CREATED);
+                }
                 
-            } catch (\Throwable $th) {
-                throw $th;
+            } catch (\Throwable $th) {    
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
             }
         }
     }
@@ -55,29 +94,71 @@ class GolonganController extends Controller
     public function updateGolonganById(Request $request, $id)
     {
         if($request->isMethod('put')){
-            $request->merge([
-                'updated_at' => \Carbon\Carbon::now()
-            ]);
-            $isUpdated = DB::table('golongan')->where('id',$id)->update($request->all());
-            return response([
-                'status' => $isUpdated,
-                'message' => 'success',
-                'id' => $id,
-                'data' => $request->all()
-            ],Response::HTTP_OK);
-            
+            try {
+                $isExist = DB::table('golongan')->where('id',$id)->exists();
+                if($isExist){
+                    $request->merge([
+                        'updated_at' => \Carbon\Carbon::now()
+                    ]);
+                    $affectedRows = DB::table('golongan')->where('id',$id)->update($request->all());
+                    if($affectedRows > 0){
+                        return response()->json([
+                            'status' => 'success',
+                            'code' => 200,
+                            'data' => [
+                                'golongan' => $request->all()
+                            ]
+                        ],Response::HTTP_OK);
+                    }
+                }else {
+                    return response()->json([
+                        'status' => 'fail',
+                        'code' => 404,
+                        'data' => [
+                            'id' => 'record doesn\'t exist' 
+                        ]
+                    ],Response::HTTP_NOT_FOUND);
+                }
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
+            }
         }
     }
 
     public function deleteGolonganById(Request $request, $id)
     {
         if($request->isMethod('delete')){
-            $isDeleted = DB::table('golongan')->delete($id);
-            return response()->json([
-                'status' => $isDeleted,
-                'message' => 'success',
-                'id' => $id
-            ],Response::HTTP_OK);
+            try {
+                $isExist = DB::table('golongan')->where('id',$id)->exists();
+                if($isExist){
+                    $affectedRows = DB::table('golongan')->delete($id);
+                    if($affectedRows > 0){
+                        return response()->json([
+                            'status' => 'success',
+                            'code' => 200,
+                            'data' => null
+                        ],Response::HTTP_OK);
+                    }
+                }else {
+                    return response()->json([
+                        'status' => 'fail',
+                        'code' => 404,
+                        'data' => [
+                            'id' => 'record doesn\'t exist' 
+                        ]
+                    ],Response::HTTP_NOT_FOUND);
+                }
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
+            }
         }
     }
 }

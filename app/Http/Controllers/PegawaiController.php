@@ -5,19 +5,61 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
+// this JSON response following the JSend standard https://github.com/omniti-labs/jsend
+// with additional http status code following https://api.stackexchange.com/docs/error-handling
+
+
 class PegawaiController extends Controller
 {
     public function index()
     {
-        $pegawai  = DB::table('pegawai')->get();
+        try {
+            $pegawai = DB::table('pegawai')->get();
+            return response()->json([
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'pegawai' => $pegawai
+                ]
+            ], Response::HTTP_OK);
 
-        return response()->json($pegawai,Response::HTTP_OK);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 400,
+                'message' => $th->getMessage()
+            ],Response::HTTP_BAD_REQUEST);
+        }
     }
 
     public function getPegawaiById($id)
     {
-        $pegawai = DB::table('pegawai')->where('id',$id)->first();
-        return response()->json($pegawai,Response::HTTP_OK);
+        try {
+            $pegawai = DB::table('pegawai')->where('id',$id)->first();
+            if($pegawai){
+                return response()->json([
+                    'status' => 'success',
+                    'code' => 200,
+                    'data' => [
+                        'pegawai' => $pegawai
+                    ]
+                ],Response::HTTP_OK);
+            }else {
+                return response()->json([
+                    'status' => 'fail',
+                    'code' => 404,
+                    'data' => [
+                        'id' => 'data not found or record doesn\'t exist'
+                    ]
+                ],Response::HTTP_NOT_FOUND);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 400,
+                'message' => $th->getMessage()
+            ],Response::HTTP_BAD_REQUEST);
+        }
     }
 
     public function storePegawai(Request $request)
@@ -28,16 +70,23 @@ class PegawaiController extends Controller
                     'created_at' => \Carbon\Carbon::now(),
                     'updated_at' => \Carbon\Carbon::now()
                 ]);
-                // $golongan = $request->all();
                 $isCreated = DB::table('pegawai')->insert($request->all());
-                return response([
-                    'status' => $isCreated,
-                    'message' => 'success',
-                    'data' => $request->all()
-                ],Response::HTTP_CREATED);
+                if($isCreated){
+                    return response([
+                        'status' => 'success',
+                        'code' => 201,
+                        'data' => [
+                            'pegawai' => $request->all()
+                        ]
+                    ],Response::HTTP_CREATED);
+                }
                 
-            } catch (\Throwable $th) {
-                throw $th;
+            } catch (\Throwable $th) {    
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
             }
         }
     }
@@ -45,28 +94,71 @@ class PegawaiController extends Controller
     public function updatePegawaiById(Request $request, $id)
     {
         if($request->isMethod('put')){
-            $request->merge([
-                'updated_at' => \Carbon\Carbon::now()
-            ]);
-            $isUpdated = DB::table('pegawai')->where('id',$id)->update($request->all());
-            return response([
-                'status' => $isUpdated,
-                'message' => 'success',
-                'id' => $id,
-                'data' => $request->all()
-            ],Response::HTTP_OK);
-        }
+            try {
+                $isExist = DB::table('pegawai')->where('id',$id)->exists();
+                if($isExist){
+                    $request->merge([
+                        'updated_at' => \Carbon\Carbon::now()
+                    ]);
+                    $affectedRows = DB::table('pegawai')->where('id',$id)->update($request->all());
+                    if($affectedRows > 0){
+                        return response()->json([
+                            'status' => 'success',
+                            'code' => 200,
+                            'data' => [
+                                'pegawai' => $request->all()
+                            ]
+                        ],Response::HTTP_OK);
+                    }
+                }else {
+                    return response()->json([
+                        'status' => 'fail',
+                        'code' => 404,
+                        'data' => [
+                            'id' => 'record doesn\'t exist' 
+                        ]
+                    ],Response::HTTP_NOT_FOUND);
+                }
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 'error',
+                    'code' => 400,
+                    'message' => $th->getMessage()
+                ],Response::HTTP_BAD_REQUEST);
+            }
+        }   
     }
 
     public function deletePegawaiById(Request $request, $id)
     {
-        if($request->isMethod('delete')){
-            $isDeleted = DB::table('pegawai')->delete($id);
+        
+    }
+}if($request->isMethod('delete')){
+    try {
+        $isExist = DB::table('pegawai')->where('id',$id)->exists();
+        if($isExist){
+            $affectedRows = DB::table('pegawai')->delete($id);
+            if($affectedRows > 0){
+                return response()->json([
+                    'status' => 'success',
+                    'code' => 200,
+                    'data' => null
+                ],Response::HTTP_OK);
+            }
+        }else {
             return response()->json([
-                'status' => $isDeleted,
-                'message' => 'success',
-                'id' => $id
-            ],Response::HTTP_OK);
+                'status' => 'fail',
+                'code' => 404,
+                'data' => [
+                    'id' => 'record doesn\'t exist' 
+                ]
+            ],Response::HTTP_NOT_FOUND);
         }
+    } catch (\Throwable $th) {
+        return response()->json([
+            'status' => 'error',
+            'code' => 400,
+            'message' => $th->getMessage()
+        ],Response::HTTP_BAD_REQUEST);
     }
 }
