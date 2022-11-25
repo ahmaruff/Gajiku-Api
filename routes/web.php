@@ -19,18 +19,16 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'golongan'], function() use($router){
     $router->get('/','GolonganController@index');
-    $router->get('/all','GolonganController@index');
+    $router->post('/','GolonganController@storeGolongan');
     $router->get('/{id}','GolonganController@getGolonganById');
-    $router->post('/add','GolonganController@storeGolongan');
-    $router->put('/update/{id}','GolonganController@updateGolonganById');
+    $router->put('/edit/{id}','GolonganController@updateGolonganById');
     $router->delete('/delete/{id}','GOlonganController@deleteGolonganById');
 });
 
 $router->group(['prefix'=>'pegawai'],function() use($router){
     $router->get('/','PegawaiController@index');
-    $router->get('/all','PegawaiController@index');
+    $router->post('/','PegawaiController@storePegawai');
     $router->get('/{id}','PegawaiController@getPegawaiById');
-    $router->post('/add','PegawaiController@storePegawai');
-    $router->put('/update/{id}','PegawaiController@updatePegawaiById');
+    $router->put('/edit/{id}','PegawaiController@updatePegawaiById');
     $router->delete('/delete/{id}','PegawaiController@deleteGolonganById');
 });
