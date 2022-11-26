@@ -20,7 +20,7 @@ class User extends Model implements JWTSubject, AuthorizableContract, Authentica
       * @var string[]
     */
     protected $fillable = [
-        'name', 'email',
+        'name', 'email', 'password'
     ];
 
     /**
@@ -29,7 +29,16 @@ class User extends Model implements JWTSubject, AuthorizableContract, Authentica
      * @var string[]
      */
     protected $hidden = [
-        'password',
+        'password', 'remember_token'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
     ];
 
     // Rest omitted for brevity
