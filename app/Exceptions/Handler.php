@@ -61,7 +61,7 @@ class Handler extends ExceptionHandler
             $exception = new NotFoundHttpException($message,$exception);
         }elseif($exception instanceof HttpException) {
             $message = $exception->getMessage() ? $exception->getMessage() : Response::$statusTexts[$rendered->getStatusCode()];
-            $exception = new HttpException($message, $exception);
+            $exception = new HttpException($rendered->getStatusCode(),$message, $exception);
         }else {
             $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
             $message = env('APP_DEBUG', false) ? $exception->getMessage() : Response::$statusTexts[$statusCode];
