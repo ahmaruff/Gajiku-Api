@@ -14,10 +14,18 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return response()->json([
+        'status' => 'success',
+        'code' => 200,
+        'data' => [
+            'app name' => env('APP_NAME'),
+            'description' => 'simple web API for Salary Management',
+            'app version' => $router->app->version()
+        ]
+    ],200);
 });
 
-$router->group(['prefix' => 'golongan'], function() use($router){
+$router->group(['prefix' => 'golongan', 'middleware'=> 'auth'], function() use($router){
     $router->get('/','GolonganController@index');
     // $router->post('/','GolonganController@storeGolongan');
     $router->get('/{id:[\d]+}','GolonganController@getGolonganById');
@@ -25,10 +33,16 @@ $router->group(['prefix' => 'golongan'], function() use($router){
     $router->delete('/delete/{id:[\d]+}','GOlonganController@deleteGolonganById');
 });
 
-$router->group(['prefix'=>'pegawai'],function() use($router){
+$router->group(['prefix'=>'pegawai', 'middleware' => 'auth'],function() use($router){
     $router->get('/','PegawaiController@index');
     $router->post('/','PegawaiController@storePegawai');
     $router->get('/{id:[\d]+}','PegawaiController@getPegawaiById');
     $router->put('/edit/{id:[\d]+}','PegawaiController@updatePegawaiById');
     $router->delete('/delete/{id:[\d]+}','PegawaiController@deleteGolonganById');
 });
+
+// Authentication routes
+$router->post('/login','AuthController@login');
+$router->post('/logout','AuthController@logout');
+$router->post('/register','AuthController@register');
+$router->post('/refresh','AuthController@refresh');
