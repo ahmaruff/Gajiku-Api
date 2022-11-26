@@ -45,13 +45,10 @@ class GolonganController extends Controller
                     ]
                 ],Response::HTTP_OK);
             }else {
-                return response()->json([
-                    'status' => 'fail',
-                    'code' => 404,
-                    'data' => [
-                        'id' => 'data not found or record doesn\'t exist'
-                    ]
-                ],Response::HTTP_NOT_FOUND);
+                $errors = [
+                    'id' => 'The requested resource was not found.'
+                ];
+                return $this->resourceNotFound($errors);
             }
         } catch (\Throwable $th) {
             return response()->json([
@@ -111,13 +108,10 @@ class GolonganController extends Controller
                         ],Response::HTTP_OK);
                     }
                 }else {
-                    return response()->json([
-                        'status' => 'fail',
-                        'code' => 404,
-                        'data' => [
-                            'id' => 'record doesn\'t exist' 
-                        ]
-                    ],Response::HTTP_NOT_FOUND);
+                    $errors = [
+                        'id' => 'The requested resource was not found.'
+                    ];
+                    return $this->resourceNotFound($errors);
                 }
             } catch (\Throwable $th) {
                 return response()->json([
@@ -144,13 +138,10 @@ class GolonganController extends Controller
                         ],Response::HTTP_OK);
                     }
                 }else {
-                    return response()->json([
-                        'status' => 'fail',
-                        'code' => 404,
-                        'data' => [
-                            'id' => 'record doesn\'t exist' 
-                        ]
-                    ],Response::HTTP_NOT_FOUND);
+                    $errors = [
+                        'id' => 'The requested resource was not found.'
+                    ];
+                    return $this->resourceNotFound($errors);
                 }
             } catch (\Throwable $th) {
                 return response()->json([
